@@ -1,17 +1,18 @@
+[target.riscv32imac-unknown-none-elf]
+runner = "espflash flash --monitor --chip esp32c6"
+
+[env]
+ESP_LOG = "info"
+
 [build]
 target = "riscv32imac-unknown-none-elf"
-
-[target.'cfg(target_arch = "riscv32")']
-runner    = "espflash flash --monitor"
 rustflags = [
     # Required to obtain backtraces (e.g. when using the "esp-backtrace" crate.)
     # NOTE: May negatively impact performance of produced code
     "-C", "force-frame-pointers",
-    # "-C", "link-arg=-Tlinkall.x",
+    # Requires a nightly toolchain as of 2026-06-18
+    "-Z", "stack-protector=all",
 ]
-
-[env]
-ESP_LOG = "info"
 
 [unstable]
 build-std = ["core"]
