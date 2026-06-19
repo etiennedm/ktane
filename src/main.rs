@@ -1,18 +1,23 @@
 #![no_std]
 #![no_main]
 
+mod sk6812;
+
 use embassy_executor::Spawner;
 use embassy_time::{Duration, Timer};
-use esp_hal::{interrupt::software::SoftwareInterruptControl, timer::timg::TimerGroup, rmt::Rmt};
-use esp_hal_smartled::{buffer_size_rgbw, SmartLedsAdapter};
-use smart_leds::{SmartLedsWrite, RGBA};
+use esp_hal::{
+    interrupt::software::SoftwareInterruptControl, rmt::Rmt, time::Rate, timer::timg::TimerGroup,
+};
 use log::info;
 
 // Provide #[panic_handler]
 use esp_backtrace as _;
-use esp_hal::time::Rate;
+
+use sk6812::{ColorRGBW, SK6812ChainDriver};
 
 esp_bootloader_esp_idf::esp_app_desc!();
+
+const LED_COUNT: usize = 4;
 
 #[embassy_executor::task]
 async fn run() {
@@ -33,37 +38,25 @@ async fn main(spawner: Spawner) {
     let timg0 = TimerGroup::new(peripherals.TIMG0);
     esp_rtos::start(timg0.timer0, sw_int.software_interrupt0);
 
-    const LED_COUNT: usize = 4;
-    let rmt: Rmt<'_, esp_hal::Blocking> = {
-        let frequency = Rate::from_mhz(80);
-        Rmt::new(peripherals.RMT, frequency)
-    }.expect("Failed to initialize RMT peripheral");
-
-    let rmt_channel = rmt.channel0;
-    let mut rmt_buffer = [esp_hal::rmt::PulseCode::default(); buffer_size_rgbw(LED_COUNT)];
-    let mut led: SmartLedsAdapter<'_, { buffer_size_rgbw(LED_COUNT) }, RGBA<u8>> = SmartLedsAdapter::new_with_color(rmt_channel, peripherals.GPIO3, &mut rmt_buffer);
+    let rmt =
+        Rmt::new(peripherals.RMT, Rate::from_mhz(80)).expect("Failed to initialize RMT peripheral");
+    let mut leds = SK6812ChainDriver::<LED_COUNT, { sk6812::frame_len(LED_COUNT) }>::new(
+        rmt.channel0,
+        peripherals.GPIO3,
+    );
 
     spawner.spawn(run().unwrap());
 
     loop {
         info!("Blink from main!");
         Timer::after(Duration::from_millis(1_000)).await;
-        led.write(
-            [
-                RGBA::new(60, 0, 0, 0),
-                RGBA::new(0, 60, 0, 0),
-                RGBA::new(0, 0, 60, 0),
-                RGBA::new(60, 60, 0, 0),
-            ]
-        ).unwrap();
+        leds.write(&[
+            ColorRGBW::new(0, 60, 0, 0),
+            ColorRGBW::new(60, 0, 0, 0),
+            ColorRGBW::new(0, 0, 60, 0),
+            ColorRGBW::new(60, 60, 0, 0),
+        ]);
         Timer::after(Duration::from_millis(1_000)).await;
-        led.write(
-            [
-                RGBA::new(0, 0, 0, 0),
-                RGBA::new(0, 0, 0, 0),
-                RGBA::new(0, 0, 0, 0),
-                RGBA::new(0, 0, 0, 0),
-            ]
-        ).unwrap();
+        leds.write(&[ColorRGBW::OFF; LED_COUNT]);
     }
 }
