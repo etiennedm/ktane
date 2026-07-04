@@ -18,3 +18,4 @@ esp-backtrace = { workspace = true, features = ["esp32c6"] }
 log = { workspace = true }
 embassy-executor = { workspace = true }
 embassy-time = { workspace = true }
+embedded-hal-async = { workspace = true }
