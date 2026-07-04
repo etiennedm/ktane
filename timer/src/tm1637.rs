@@ -1,6 +1,7 @@
 use embedded_hal_async::i2c::I2c;
 use log::info;
 
+#[allow(dead_code)]
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum BrightnessLevel {
     // Flip bits since LSB first is expected by the TM1637 but I2C is sending MSB first
@@ -97,6 +98,7 @@ where
         self
     }
 
+    #[allow(dead_code)]
     pub fn with_display_off(&mut self) -> &mut Self {
         self.display_on = false;
         self
@@ -113,10 +115,9 @@ where
     }
 
     pub async fn refresh(&mut self) {
-        match self.i2c.write(0x01, &[]).await {
-            Err(e) => info!("I2C write error for command: {}", e),
-            _ => {}
-        };
+        if let Err(e) = self.i2c.write(0x01, &[]).await {
+            info!("I2C write error for command: {}", e);
+        }
 
         // Invalid command (LSB = 00) followed by data for C0H-C3H, adding a dummy 0xFF last makes it
         // somehow loop around to accept the next update.
@@ -129,7 +130,7 @@ where
             digit_data[1] += 1;
         }
 
-        match self
+        if let Err(e) = self
             .i2c
             .write(
                 0x00, /* 0xFF on bus */
@@ -137,15 +138,13 @@ where
             )
             .await
         {
-            Err(e) => info!("I2C write error for command: {}", e),
-            _ => {}
-        };
+            info!("I2C write error for command: {}", e);
+        }
 
         // Send display control command to enable display and set brightness level
         let display_cmd = (self.display_on as u8) << 3 | (self.brightness_level as u8) << 4;
-        match self.i2c.read(display_cmd, &mut [0; 1]).await {
-            Err(e) => info!("I2C write error for display: {}", e),
-            _ => {}
-        };
+        if let Err(e) = self.i2c.read(display_cmd, &mut [0; 1]).await {
+            info!("I2C write error for display: {}", e);
+        }
     }
 }

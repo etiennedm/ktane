@@ -4,7 +4,7 @@
 mod tm1637;
 
 use embassy_executor::Spawner;
-use embassy_time::{Duration, Timer};
+use embassy_time::{Duration, Instant, Timer};
 use esp_hal::{
     interrupt::software::SoftwareInterruptControl, timer::timg::TimerGroup, time::Rate,
 };
@@ -40,37 +40,29 @@ async fn main(_spawner: Spawner) {
 
     info!("ESP RTOS scheduler started");
 
+    let mut time_digits = [SevenSegmentChar::Blank; 4];
+    let mut previous_seconds = 0u64;
+
     loop {
-        tm.with_digits([SevenSegmentChar::Digit0; 4]).with_display_on().refresh().await;
-        for (i, level) in [BrightnessLevel::Level0, BrightnessLevel::Level1, BrightnessLevel::Level2, BrightnessLevel::Level3, BrightnessLevel::Level4, BrightnessLevel::Level5, BrightnessLevel::Level6, BrightnessLevel::Level7].iter().enumerate() {
-            tm.with_brightness_level(*level).refresh().await;
-            Timer::after(Duration::from_millis(250)).await;
+        let elapsed_seconds = Instant::now().as_secs();
+
+        if previous_seconds != elapsed_seconds {
+            let minutes = ((elapsed_seconds / 60) % 60) as u8;
+            let seconds = (elapsed_seconds % 60) as u8;
+            info!("Tick, it is now {minutes:02}:{seconds:02}");
+
+            time_digits[3] = (seconds % 10).into();
+            time_digits[2] = (seconds / 10).into();
+            time_digits[1] = (minutes % 10).into();
+            time_digits[0] = (minutes / 10).into();
+
+            previous_seconds = elapsed_seconds;
         }
 
-        for i in 0..10{
-            tm.with_colon_on(i%2 == 0).refresh().await;
-            Timer::after(Duration::from_millis(250)).await;
-        }
-
-        for i in 0..10000 {
-            let mut digits = [SevenSegmentChar::Blank; 4];
-            for (index, digit) in digits.iter_mut().rev().enumerate() {
-                *digit = (((i / (10_i32.pow(index as u32))) % 10) as u8).into()
-            }
-            for digit in digits.iter_mut() {
-                if *digit == SevenSegmentChar::Digit0 {
-                    *digit = SevenSegmentChar::Blank;
-                } else {
-                    break;
-                }
-            }
-            tm.with_digits(digits).refresh().await;
-            Timer::after(Duration::from_millis(10)).await;
-        }
-
-        tm.with_display_off().refresh().await;
-        Timer::after(Duration::from_secs(1)).await;
-        info!("Tick");
+        tm.with_digits(time_digits);
+        tm.with_colon_on(true);
+        tm.with_brightness_level(BrightnessLevel::Level5).with_display_on().refresh().await;
+        Timer::after(Duration::from_millis(100)).await;
     }
 }
 
