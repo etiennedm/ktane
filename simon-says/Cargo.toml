@@ -1,0 +1,20 @@
+[package]
+name = "simon-says"
+version.workspace = true
+edition.workspace = true
+
+# Disable '--test' flag passed to rustc/rust analyzer, avoid "can't find crate for test" lint message.
+[[bin]]
+name = "simon-says"
+test = false
+bench = false
+
+[dependencies]
+esp-bootloader-esp-idf = { workspace = true, features = ["esp32c6"] }
+esp-hal = { workspace = true, features = ["esp32c6"] }
+esp-rtos = { workspace = true, features = ["esp32c6"] }
+esp-println = { workspace = true, features = ["esp32c6"] }
+esp-backtrace = { workspace = true, features = ["esp32c6"] }
+log = { workspace = true }
+embassy-executor = { workspace = true }
+embassy-time = { workspace = true }
