@@ -7,7 +7,8 @@ rustup target add riscv32imac-unknown-none-elf
 cargo install espflash
 ```
 
-Then, build and run the project:
+Then, build and run the desired project:
 ```bash
-cargo run
+cargo run -p timer
+cargo run -p simon-says
 ```
