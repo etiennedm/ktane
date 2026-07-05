@@ -1,0 +1,108 @@
+device_name = "ktane-timer"
+software_version = "001"
+hardware_version = "1"
+heartbeat_period = 1000
+autostart = "enabled"
+
+[identity]
+vendor_id = 0xCAFE
+product_code = 1032
+revision_number = 1
+
+[pdos]
+num_tpdo = 4
+num_rpdo = 4
+
+[[objects]]
+index = 0x2000
+parameter_name = "Tick Count TX"
+object_type = "var"
+data_type = "uint32"
+access_type = "rw"
+default_value = 0
+pdo_mapping = "tpdo"
+
+[[objects]]
+index = 0x2001
+parameter_name = "Tick Count RX"
+object_type = "var"
+data_type = "uint32"
+access_type = "rw"
+default_value = 0
+pdo_mapping = "rpdo"
+
+# # The raw 12-bit ADC readings for four AIN channel
+# [[objects]]
+# index = 0x2000
+# parameter_name = "Raw Analog Input"
+# object_type = "array"
+# data_type = "uint16"
+# access_type = "ro"
+# array_size = 4
+# default_value = [0, 0, 0, 0]
+# pdo_mapping = "tpdo"
+#
+# # Scaled AIN values
+# [[objects]]
+# index = 0x2001
+# parameter_name = "Scaled Analog Input I32"
+# object_type = "array"
+# data_type = "int32"
+# access_type = "ro"
+# array_size = 4
+# default_value = [0, 0, 0, 0]
+# pdo_mapping = "tpdo"
+#
+# # Scaled AIN values
+# [[objects]]
+# index = 0x2002
+# parameter_name = "Scaled Analog Input I16"
+# object_type = "array"
+# data_type = "int16"
+# access_type = "ro"
+# array_size = 4
+# default_value = [0, 0, 0, 0]
+# pdo_mapping = "tpdo"
+#
+# Configures how often to read the analog channels
+# [[objects]]
+# index = 0x2100
+# parameter_name = "Analog Read Period (ms)"
+# object_type = "var"
+# data_type = "uint32"
+# access_type = "rw"
+# default_value = 20
+# persist = true
+#
+# # scale multiplier for scaled AIN channels
+# [[objects]]
+# index = 0x2200
+# parameter_name = "AIN Scale Numerators"
+# object_type = "array"
+# data_type = "int16"
+# array_size = 4
+# access_type = "rw"
+# default_value = [1, 1, 1, 1]
+# persist = true
+#
+# # scale dividers for scaled AIN channels
+# [[objects]]
+# index = 0x2201
+# parameter_name = "AIN Scale Denominators"
+# object_type = "array"
+# data_type = "int16"
+# array_size = 4
+# access_type = "rw"
+# default_value = [1, 1, 1, 1]
+# persist = true
+#
+# # offset for scaled AIN channels
+# [[objects]]
+# index = 0x2202
+# parameter_name = "AIN Scale Offsets"
+# object_type = "array"
+# data_type = "int16"
+# array_size = 4
+# access_type = "rw"
+# default_value = [0, 0, 0, 0]
+# persist = true

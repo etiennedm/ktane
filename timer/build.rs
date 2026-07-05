@@ -1,4 +1,9 @@
 fn main() {
+    if let Err(e) = zencan_build::build_node_from_device_config("ZENCAN_CONFIG", "zencan_config.toml") {
+        eprintln!("Failed to parse zencan_config.toml: {}", e);
+        std::process::exit(-1);
+    }
+
     linker_be_nice();
     // make sure linkall.x is the last linker script (otherwise might cause problems with flip-link)
     println!("cargo:rustc-link-arg=-Tlinkall.x");

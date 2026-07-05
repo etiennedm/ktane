@@ -17,5 +17,13 @@ esp-println = { workspace = true, features = ["esp32c6"] }
 esp-backtrace = { workspace = true, features = ["esp32c6"] }
 log = { workspace = true }
 embassy-executor = { workspace = true }
+embassy-futures = { workspace = true }
+embassy-sync = { workspace = true }
 embassy-time = { workspace = true }
+embedded-can = { workspace = true }
 embedded-hal-async = { workspace = true }
+zencan-node = { workspace = true }
+
+[build-dependencies]
+zencan-build = { path = "../../zencan/zencan-build" }
+
